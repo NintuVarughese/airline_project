@@ -1,5 +1,6 @@
 <?php
 include('db_conn.php');
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if both email and password are provided
     if(isset($_POST['email']) && isset($_POST['password'])) {
@@ -7,22 +8,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $password = $_POST['password'];
         
         // Validate the email and password (You should use secure password hashing and SQL injection prevention techniques)
-        // Here, assuming you have a users table in your database
-        $query = "SELECT * FROM register WHERE email='$email' AND password='$password'";
-        $result = mysqli_query($conn, $query);
-
-        // Check if query returned any rows
-        if(mysqli_num_rows($result) == 1) {
-            // Redirect to the home page if login is successful
-            header("Location: home.php");
+        // Check if the user is admin
+        if ($email === "admin@gmail.com" && $password === "admin") {
+            // Redirect admin to admin.php
+            header("Location: admin.php");
             exit;
         } else {
-            // Display error message for invalid credentials
-            echo "<script>alert('Invalid email or password');</script>";
+            // Assuming you have a users table in your database
+            $query = "SELECT * FROM register WHERE email='$email' AND password='$password'";
+            $result = mysqli_query($conn, $query);
+
+            // Check if query returned any rows
+            if(mysqli_num_rows($result) == 1) {
+                // Redirect to availablef.php if login is successful
+                header("Location: availablef.php");
+                exit;
+            } else {
+                // Display error message for invalid credentials
+                echo "<script>alert('Invalid email or password');</script>";
+            }
         }
     }
 }
 ?>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">

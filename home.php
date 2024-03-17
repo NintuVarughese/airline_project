@@ -21,8 +21,7 @@
             background-color: rgba(0, 0, 0, 0.7);
         }
 
-       
-        input {
+        input, textarea {
             margin-bottom: 10px;
             width: 100%;
             padding: 5px;
@@ -34,19 +33,8 @@
         }
 
         input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 5px;
+            display: none;
         }
-
 
         /* Style the "Book Flight" link */
         .book-flight-btn {
@@ -67,87 +55,116 @@
         .book-flight-btn:hover {
             background-color: #4CAF50;
             color: #fff;
-        } 
-
+        }
 
     </style>
 </head>
 <body>
-    <form id="bookingForm" action="" method="post">
-        <label for="from">From:</label>
-        <input type="text" id="from" name="from" required><br><br>
-        
-        <label for="to">To:</label>
-        <input type="text" id="to" name="to" required><br><br>
-
+    <form id="bookingForm" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required><br><br>
-        
+
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" required><br><br>
+
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone" required><br><br>
+
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required><br><br>
-        
-        <label for="phone">Phone:</label>
-        <input type="text" id="phone" name="phone" required><br><br>
-        
-        <label for="flightDate">Flight Date:</label>
-        <input type="date" id="flightDate" name="flightDate" required><br><br>
+
+        <label for="address">Address:</label>
+        <textarea id="address" name="address" required></textarea><br><br>
         
         <!-- <input type="submit" value="Book Flight"> -->
-        <a href="success.php" class="book-flight-btn">Book Flight</a>
+        <a href="#" class="book-flight-btn" onclick="validateForm()">Book Flight</a>
     </form>
 
     <script>
-        document.getElementById('bookingForm').addEventListener('submit', function(event) {
-            
+        function validateForm() {
             var name = document.getElementById('name').value;
-            var email = document.getElementById('email').value;
+            var age = document.getElementById('age').value;
             var phone = document.getElementById('phone').value;
-            var from = document.getElementById('from').value;
-            var to = document.getElementById('to').value;
-            var flightDate = document.getElementById('flightDate').value;
+            var email = document.getElementById('email').value;
+            var address = document.getElementById('address').value;
 
-            if ( !name || !email || !phone ||!from || !to || !flightDate) {
+            if (!name || !age || !phone || !email || !address) {
                 alert('Please fill in all fields');
-                event.preventDefault();
+            } else {
+                // Proceed with booking
+                document.getElementById('bookingForm').submit();
             }
-        });
+        }
     </script>
 
     <?php
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "db_air";
+    // Database configuration
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "db_air";
 
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    // Create table query
+    $create_table_query = "CREATE TABLE IF NOT EXISTS user (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            name VARCHAR(255) NOT NULL,
+                            age INT NOT NULL,
+                            phone VARCHAR(20) NOT NULL,
+                            email VARCHAR(255) NOT NULL,
+                            address TEXT NOT NULL
+                        )";
+
+    // Execute create table query
+    if ($conn->query($create_table_query) === TRUE) {
+        echo "Table created successfully.<br>";
+    } else {
+        echo "Error creating table: " . $conn->error . "<br>";
+    }
+
+    // Close connection
+    $conn->close();
+
+    // Insert data into user table
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Create connection
         $conn = new mysqli($servername, $username, $password, $dbname);
 
+        // Check connection
         if ($conn->connect_error) {
             die("Connection failed: " . $conn->connect_error);
         }
 
-        // $from = $_POST['from'];
-        // $to = $_POST['to'];
         $name = $_POST['name'];
-        $email = $_POST['email'];
+        $age = $_POST['age'];
         $phone = $_POST['phone'];
-        $from = $_POST['from'];
-        $to = $_POST['to'];
-        $flightDate = $_POST['flightDate'];
+        $email = $_POST['email'];
+        $address = $_POST['address'];
 
-        $sql = "INSERT INTO user (name, email, phone,from_location, to_location, flightdate) VALUES ( '$name', '$email', '$phone','$from', '$to', '$flightDate')";
+        // Prepare and bind statement
+        $stmt = $conn->prepare("INSERT INTO user (name, age, phone, email, address) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sisss", $name, $age, $phone, $email, $address);
 
-        if ($conn->query($sql) === TRUE) {
-            // echo "Booking successful";
-            $conn->close();
-
-            // Redirect to success.php
-            header("Location: success.php");
-            exit(); // Ma
+        // Execute the statement
+        if ($stmt->execute()) {
+            // Redirect to payment page
+            header("Location: payment.php");
+            exit;
         } else {
-            echo "Error: " . $sql . "<br>" . $conn->error;
+            echo "Error: " . $stmt->error;
         }
 
+        // Close statement
+        $stmt->close();
+
+        // Close connection
         $conn->close();
     }
     ?>

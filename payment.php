@@ -5,13 +5,12 @@ include('db_conn.php');
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve form data
     $name = $_POST['name'];
-    $amount = $_POST['amount'];
     $cardId = $_POST['cardId'];
 
     // Check if all fields are filled
-    if (!empty($name) && !empty($amount) && !empty($cardId)) {
+    if (!empty($name) && !empty($cardId)) {
         // Insert data into the database
-        $sql = "INSERT INTO payment (name, amount, cardid) VALUES ('$name', '$amount', '$cardId')";
+        $sql = "INSERT INTO payment (name, cardid) VALUES ('$name', '$cardId')";
         
         if ($conn->query($sql) === TRUE) {
             // Redirect to success.php
@@ -53,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             display: block;
             margin-bottom: 5px;
         }
-        input[type="text"], input[type="number"] {
+        input[type="text"] {
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
@@ -80,9 +79,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <form id="paymentForm" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required>
-            
-            <label for="amount">Amount:</label>
-            <input type="number" id="amount" name="amount" min="0" required>
             
             <label for="cardId">Card ID:</label>
             <input type="text" id="cardId" name="cardId" required>
